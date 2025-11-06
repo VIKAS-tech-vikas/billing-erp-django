@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Generated Bill{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm border-0 rounded-4 p-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold text-primary mb-0">🧾 Bill #{{ bill.id }}</h3>
+    <a href="{% url 'view_items' %}" class="btn btn-outline-secondary btn-sm">⬅ Back</a>
+  </div>
+
+  <div class="row mb-3">
+    <div class="col-md-6">
+      <h6><strong>Customer:</strong> {{ bill.customer_name }}</h6>
+      <h6><strong>Date:</strong> {{ bill.date|date:"d M Y, h:i A" }}</h6>
+    </div>
+    <div class="col-md-6 text-end">
+      <h6><strong>Bill ID:</strong> #{{ bill.id }}</h6>
+      <h6><strong>Status:</strong> <span class="badge bg-success">Generated</span></h6>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover align-middle text-center">
+      <thead class="table-light">
+        <tr>
+          <th>Item</th>
+          <th>Qty</th>
+          <th>Price (₹)</th>
+          <th>GST Rate (%)</th>
+          <th>GST Amount (₹)</th>
+          <th>Total (₹)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in bill_items %}
+        <tr>
+          <td>{{ item.item.name }}</td>
+          <td>{{ item.quantity }}</td>
+          <td>{{ item.price|floatformat:2 }}</td>
+          <td>{{ item.gst_rate|floatformat:2 }}</td>
+          <td>{{ item.gst_amount|floatformat:2 }}</td>
+          <td><strong>₹{{ item.total|floatformat:2 }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="text-end mt-4">
+    <p><strong>GST Amount:</strong> ₹{{ gst_amount|floatformat:2 }}</p>
+    <p><strong>Net Total:</strong> ₹{{ net_amount|floatformat:2 }}</p>
+    <h4 class="fw-bold text-success">Grand Total: ₹{{ total_amount|floatformat:2 }}</h4>
+  </div>
+
+  <div class="mt-4 text-center">
+    <a href="{% url 'view_items' %}" class="btn btn-secondary btn-sm">Back to Items</a>
+    <button class="btn btn-success btn-sm" onclick="window.print()">🖨 Print Bill</button>
+  </div>
+</div>
+
+<style>
+  .card {
+    border-radius: 15px;
+    background-color: #fff;
+  }
+  table th, table td {
+    vertical-align: middle;
+  }
+  @media print {
+    .btn { display: none; }
+    nav, footer { display: none; }
+    body { background: #fff; }
+  }
+</style>
+{% endblock %}

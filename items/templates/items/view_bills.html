@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}View Bills{% endblock %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-lg border-0 rounded-4">
+    <!-- Header -->
+    <div class="card-header text-white text-center rounded-top-4"
+         style="background: linear-gradient(90deg, #007bff, #00b4d8);">
+      <h3 class="fw-bold mb-0">
+        <i class="bi bi-file-earmark-text me-2"></i> All Customer Bills
+      </h3>
+    </div>
+
+    <div class="card-body bg-light">
+
+      <!-- 🔍 Search Form -->
+      <form method="get" class="row g-2 align-items-center mb-3">
+        <div class="col-md-4">
+          <input type="text" name="search" class="form-control"
+                 placeholder="Search by name or phone" value="{{ search }}">
+        </div>
+        <div class="col-md-3">
+          <input type="date" name="date" class="form-control" value="{{ date }}">
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-primary w-100">
+            <i class="bi bi-search"></i> Search
+          </button>
+        </div>
+        <div class="col-md-2">
+          <a href="{% url 'view_bills' %}" class="btn btn-secondary w-100">
+            <i class="bi bi-arrow-clockwise"></i> Reset
+          </a>
+        </div>
+      </form>
+
+      {% if bills %}
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center table-hover">
+          <thead style="background: linear-gradient(90deg, #007bff, #00b4d8); color: white;">
+            <tr>
+              <th>#</th>
+              <th>Customer Name</th>
+              <th>Phone</th>
+              <th>Date</th>
+              <th>Total (₹)</th>
+              <th>GST (₹)</th>
+              <th>Net Amount (₹)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for bill in bills %}
+            <tr>
+              <td>{{ forloop.counter0|add:bills.start_index }}</td>
+              <td>{{ bill.customer_name }}</td>
+              <td>{{ bill.customer_phone|default:"—" }}</td>
+              <td>{{ bill.date|date:"d-m-Y H:i" }}</td>
+              <td>₹ {{ bill.total_amount|floatformat:2 }}</td>
+              <td>₹ {{ bill.gst_amount|floatformat:2 }}</td>
+              <td><strong>₹ {{ bill.net_amount|floatformat:2 }}</strong></td>
+              <td>
+                <a href="{% url 'bill_detail' bill.id %}" class="btn btn-primary btn-sm">
+                  <i class="bi bi-eye"></i> View
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 💰 Summary -->
+      <div class="mt-3 text-end">
+        <div class="alert alert-info d-inline-block text-start">
+          <p class="mb-1"><strong>Total Bills (this page):</strong> {{ bills|length }}</p>
+          <p class="mb-1"><strong>Total GST (this page):</strong> ₹ {{ total_gst|floatformat:2 }}</p>
+          <p class="mb-0"><strong>Grand Total (this page):</strong> ₹ {{ grand_total|floatformat:2 }}</p>
+        </div>
+      </div>
+
+      <!-- 📄 Pagination Controls -->
+      {% if bills.has_other_pages %}
+      <nav aria-label="Bill pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+          {% if bills.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ bills.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if date %}&date={{ date }}{% endif %}">
+                Previous
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+          {% endif %}
+
+          {% for num in bills.paginator.page_range %}
+            {% if bills.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > bills.number|add:-3 and num < bills.number|add:3 %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}{% if date %}&date={{ date }}{% endif %}">
+                  {{ num }}
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if bills.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ bills.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if date %}&date={{ date }}{% endif %}">
+                Next
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
+      {% else %}
+      <p class="text-center text-muted my-4">No bills found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

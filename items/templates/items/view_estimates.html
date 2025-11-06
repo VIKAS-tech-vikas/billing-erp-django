@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}View Estimates{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-lg border-0 rounded-4">
+    <!-- Header -->
+    <div class="card-header text-white text-center rounded-top-4"
+         style="background: linear-gradient(90deg, #007bff, #00b4d8);">
+      <h3 class="fw-bold mb-0">
+        <i class="bi bi-clipboard-data me-2"></i> All Customer Estimates
+      </h3>
+    </div>
+
+    <div class="card-body bg-light">
+      <!-- 🔍 Search Form -->
+      <form method="get" class="d-flex justify-content-end mb-3">
+        <input type="text" name="search" class="form-control me-2"
+               placeholder="Search by name, phone or product"
+               value="{{ search }}">
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-search"></i> Search
+        </button>
+      </form>
+
+      {% if estimates %}
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center">
+          <thead style="background: linear-gradient(90deg, #007bff, #00b4d8); color: white;">
+            <tr>
+              <th>#</th>
+              <th>Customer Name</th>
+              <th>Phone</th>
+              <th>Date</th>
+              <th>Total (₹)</th>
+              <th>Net Amount (₹)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for estimate in estimates %}
+            <tr>
+              <td>{{ forloop.counter0|add:estimates.start_index }}</td>
+              <td>{{ estimate.customer_name }}</td>
+              <td>{{ estimate.customer_phone|default:"—" }}</td>
+              <td>{{ estimate.date|date:"d-m-Y H:i" }}</td>
+              <td>₹ {{ estimate.total_amount }}</td>
+              <td><strong>₹ {{ estimate.net_amount }}</strong></td>
+              <td>
+                <a href="{% url 'estimate_bill' estimate.id %}" class="btn btn-primary btn-sm">
+                  <i class="bi bi-eye"></i> View
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 💰 Summary -->
+      <div class="mt-3 text-end">
+        <div class="alert alert-info d-inline-block text-start">
+          <p class="mb-1"><strong>Total Estimates (this page):</strong> {{ estimates|length }}</p>
+          <p class="mb-1"><strong>Total Amount (this page):</strong> ₹ {{ total_amount }}</p>
+          <p class="mb-0"><strong>Grand Total (this page):</strong> ₹ {{ grand_total }}</p>
+        </div>
+      </div>
+
+      <!-- 📄 Pagination Controls -->
+      {% if estimates.has_other_pages %}
+      <nav aria-label="Estimate pagination" class="mt-4">
+        <ul class="pagination justify-content-center">
+          {% if estimates.has_previous %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ estimates.previous_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                Previous
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+          {% endif %}
+
+          {% for num in estimates.paginator.page_range %}
+            {% if estimates.number == num %}
+              <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > estimates.number|add:-3 and num < estimates.number|add:3 %}
+              <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% if search %}&search={{ search }}{% endif %}">
+                  {{ num }}
+                </a>
+              </li>
+            {% endif %}
+          {% endfor %}
+
+          {% if estimates.has_next %}
+            <li class="page-item">
+              <a class="page-link" href="?page={{ estimates.next_page_number }}{% if search %}&search={{ search }}{% endif %}">
+                Next
+              </a>
+            </li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+      {% endif %}
+
+      {% else %}
+      <p class="text-center text-muted my-4">No estimates found.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

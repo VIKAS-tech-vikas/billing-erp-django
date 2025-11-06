@@ -1,0 +1,232 @@
+{% extends "base.html" %}
+{% block title %}Add Item Master{% endblock %}
+
+{% block content %}
+
+<!-- 🌐 Modern Glass Header -->
+<div class="company-banner text-center py-5 mb-5">
+  <div class="company-overlay">
+    <h1 class="fw-bold mb-2 company-title">
+      <i class="bi bi-telephone-fill me-2"></i> HELPLINE TELECOM SYSTEM
+    </h1>
+    <p class="company-sub mb-1">Shop No 86, First Floor, Opp. Fire Station, Hallet Road, Moradabad</p>
+    <p class="company-contact mb-0">
+      <strong>Tel:</strong> 9411097447 &nbsp; | &nbsp;
+      <strong>Email:</strong>
+      <a href="mailto:helplinetelecomsystems@gmail.com">helplinetelecomsystems@gmail.com</a>
+    </p>
+  </div>
+</div>
+
+<!-- 🧾 Add Item Form -->
+<div class="container-fluid px-5 mb-5 animate-fade">
+  <div class="card shadow-lg border-0 rounded-4 glass-card mx-auto">
+    <div class="card-header form-header text-white text-center py-3 rounded-top-4">
+      <h4 class="mb-0 fw-semibold">
+        <i class="bi bi-box-seam me-2"></i> Add Item Master
+      </h4>
+    </div>
+
+    <div class="card-body p-4">
+
+      <!-- ✅ Flash Messages -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm rounded-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" class="p-2">
+        {% csrf_token %}
+
+        <!-- 🧾 Main Item Details -->
+        <div class="section-box mb-4 p-4 shadow-sm bg-white rounded-3">
+          <h5 class="fw-bold text-primary border-bottom pb-2 mb-3">
+            <i class="bi bi-info-circle-fill me-2"></i> Main Item Details
+          </h5>
+
+          <div class="row g-3">
+  <div class="col-md-6">
+    <label class="form-label fw-semibold">Product Name <span class="text-danger">*</span></label>
+    <input type="text" name="name" class="form-control fancy-input" placeholder="Enter item name" required>
+  </div>
+  <div class="col-md-6">
+    <label class="form-label fw-semibold">Alias</label>
+    <input type="text" name="alias" class="form-control fancy-input" placeholder="Enter alias name">
+  </div>
+
+  <div class="col-md-6">
+    <label class="form-label fw-semibold">Group</label>
+    <input type="text" name="group" class="form-control fancy-input" placeholder="Enter group name">
+  </div>
+
+  <!-- ✅ Unit Dropdown (Only Once) -->
+  <div class="col-md-6">
+    <label class="form-label fw-semibold">Unit</label>
+    <select name="unit" class="form-select fancy-input" required>
+      <option value="" disabled selected>Select Unit</option>
+      <option value="pcs">Pieces (pcs)</option>
+      <option value="box">Box</option>
+      <option value="kg">Kilograms (kg)</option>
+      <option value="g">Grams (g)</option>
+      <option value="cm">Centimeters (cm)</option>
+      <option value="m">Meters (m)</option>
+      <option value="mm">Millimeters (mm)</option>
+      <option value="ltr">Litres (ltr)</option>
+      <option value="ml">Millilitres (ml)</option>
+      <option value="dozen">Dozen</option>
+      <option value="packet">Packet</option>
+      <option value="set">Set</option>
+      <option value="pair">Pair</option>
+    </select>
+  </div>
+
+  <!-- ✅ Quantity Input (Numeric Only) -->
+  <div class="col-md-6">
+    <label class="form-label fw-semibold">Quantity</label>
+    <input type="number" name="stock" class="form-control fancy-input" value="0" min="0" step="1" required>
+  </div>
+</div>
+</div>
+
+
+        <!-- 💰 Pricing Details -->
+        <div class="section-box mb-4 p-4 shadow-sm bg-white rounded-3">
+          <h5 class="fw-bold text-success border-bottom pb-2 mb-3">
+            <i class="bi bi-cash-stack me-2"></i> Pricing Details
+          </h5>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Purchase Price</label>
+              <input type="number" step="0.01" name="purchase_price" class="form-control fancy-input" value="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Sales Price (Main Price) <span class="text-danger">*</span></label>
+              <input type="number" step="0.01" name="price" class="form-control fancy-input" placeholder="Enter selling price" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">MRP</label>
+              <input type="number" step="0.01" name="mrp" class="form-control fancy-input" value="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">GST Rate (%)</label>
+<select name="gst_rate" class="form-select" required>
+  <option value="0">0% - No GST</option>
+  <option value="5">5% - Essential Goods</option>
+  <option value="12">12% - Standard Rate</option>
+  <option value="18" selected>18% - Default</option>
+  <option value="28">28% - Luxury Goods</option>
+</select>
+
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Sale Discount (%)</label>
+              <input type="number" step="0.01" name="sale_discount" class="form-control fancy-input" value="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">Purchase Discount (%)</label>
+              <input type="number" step="0.01" name="purchase_discount" class="form-control fancy-input" value="0">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold">HSN Code</label>
+              <input type="text" name="hsn_code" class="form-control fancy-input" placeholder="Enter HSN code (optional)">
+            </div>
+          </div>
+        </div>
+
+        <!-- 📝 Description -->
+        <div class="section-box mb-4 p-4 shadow-sm bg-white rounded-3">
+          <h5 class="fw-bold text-secondary border-bottom pb-2 mb-3">
+            <i class="bi bi-card-text me-2"></i> Description
+          </h5>
+          <textarea name="description" class="form-control fancy-input" rows="3" placeholder="Enter item description..."></textarea>
+        </div>
+
+        <!-- ✅ Buttons -->
+        <div class="d-flex justify-content-between align-items-center mt-4">
+          <a href="{% url 'view_items' %}" class="btn btn-outline-secondary rounded-pill px-4 shadow-sm hover-lift">
+            <i class="bi bi-arrow-left-circle"></i> Back
+          </a>
+          <button type="submit" class="btn btn-gradient rounded-pill px-5 shadow-sm fw-semibold hover-lift">
+            <i class="bi bi-save2 me-1"></i> Save Item
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 💅 Styling -->
+<style>
+  .company-banner {
+    background: linear-gradient(120deg, #004aad, #007bff, #00b4d8);
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .company-banner::after {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(6px);
+  }
+  .company-overlay {
+    position: relative;
+    z-index: 2;
+  }
+  .company-title {
+    font-size: 2.2rem;
+    letter-spacing: 1px;
+  }
+  .company-contact a {
+    color: #fff;
+    text-decoration: underline;
+  }
+  .glass-card {
+    max-width: 85%;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+  }
+  .form-header {
+    background: linear-gradient(90deg, #007bff, #00b4d8);
+  }
+  .section-box {
+    border-left: 4px solid #007bff;
+  }
+  .fancy-input {
+    border-radius: 10px;
+    border: 1px solid #d0d7de;
+    transition: all 0.2s;
+  }
+  .fancy-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+  }
+  .btn-gradient {
+    background: linear-gradient(90deg, #007bff, #00b4d8);
+    color: #fff;
+    border: none;
+    transition: 0.3s ease;
+  }
+  .btn-gradient:hover {
+    transform: scale(1.07);
+    background: linear-gradient(90deg, #0056b3, #0096c7);
+  }
+  .hover-lift:hover {
+    transform: translateY(-3px);
+  }
+  .animate-fade {
+    animation: fadeInUp 0.8s ease-in-out;
+  }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+{% endblock %}

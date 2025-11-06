@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% block title %}Create Estimate / Quotation{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-header bg-gradient text-white text-center rounded-top-4"
+         style="background: linear-gradient(90deg, #007bff, #00b4d8);">
+      <h3 class="mb-0 fw-bold">
+        <i class="bi bi-clipboard-check me-2"></i> Create Customer Estimate / Quotation
+      </h3>
+    </div>
+
+    <div class="card-body bg-light">
+      <form method="POST" action="">
+        {% csrf_token %}
+
+        <!-- 🧍 Customer Info -->
+        <div class="row mb-4">
+          <div class="col-md-4">
+            <input type="text" name="customer_name" class="form-control" placeholder="Enter customer name" required>
+          </div>
+          <div class="col-md-4">
+            <input type="text" name="customer_phone" class="form-control" placeholder="Enter phone number">
+          </div>
+          <div class="col-md-4">
+            <input type="text" name="customer_address" class="form-control" placeholder="Enter address">
+          </div>
+        </div>
+
+        <!-- 🧾 Product Table -->
+        <div class="table-responsive">
+          <table class="table table-bordered align-middle text-center" id="estimateTable">
+            <thead class="table-primary">
+              <tr>
+                <th>Product</th>
+                <th>HSN Code</th>
+                <th>Qty</th>
+                <th>Price (₹)</th>
+                <th>Total (₹)</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <select name="item" class="form-select">
+                    <option value="">-- Select Product --</option>
+                    {% for item in items %}
+                      <option value="{{ item.id }}">{{ item.name }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td><input type="text" name="hsn" class="form-control" readonly></td>
+                <td><input type="number" name="quantity" class="form-control" value="1" min="1"></td>
+                <td><input type="number" name="price" class="form-control" step="0.01"></td>
+                <td><input type="number" name="total" class="form-control" step="0.01" readonly></td>
+                <td>
+                  <button type="button" class="btn btn-danger btn-sm remove-row">
+                    <i class="bi bi-x-lg"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- ➕ Add Product -->
+        <div class="text-center my-3">
+          <button type="button" id="addRow" class="btn btn-primary rounded-pill shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Add Product
+          </button>
+        </div>
+
+        <!-- 💰 Grand Total -->
+        <div class="text-end">
+          <h4><strong>Grand Total (₹):</strong> <span id="grandTotal">0.00</span></h4>
+        </div>
+
+        <div class="text-center mt-4">
+          <button type="submit" id="generateBtn" class="btn btn-success btn-lg rounded-pill shadow" disabled>
+            <i class="bi bi-clipboard-check"></i> Generate Estimate
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- 🧮 Script for dynamic calculations + HSN autofill -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const table = document.getElementById("estimateTable");
+  const addRowBtn = document.getElementById("addRow");
+  const grandTotalEl = document.getElementById("grandTotal");
+  const generateBtn = document.getElementById("generateBtn");
+
+  // 🧮 Calculate total for a row
+  function calculateRow(row) {
+    const qty = parseFloat(row.querySelector('input[name="quantity"]').value) || 0;
+    const price = parseFloat(row.querySelector('input[name="price"]').value) || 0;
+    const total = qty * price;
+    row.querySelector('input[name="total"]').value = total.toFixed(2);
+    calculateGrandTotal();
+  }
+
+  // 💰 Calculate grand total
+  function calculateGrandTotal() {
+    let grandTotal = 0;
+    document.querySelectorAll('input[name="total"]').forEach(input => {
+      grandTotal += parseFloat(input.value) || 0;
+    });
+    grandTotalEl.textContent = grandTotal.toFixed(2);
+
+    // enable/disable generate button
+    generateBtn.disabled = grandTotal <= 0;
+  }
+
+  // 🧾 Fetch HSN & Price on product select
+  table.addEventListener("change", function(e) {
+    if (e.target.tagName === "SELECT" && e.target.name === "item") {
+      const row = e.target.closest("tr");
+      const productId = e.target.value;
+
+      if (productId) {
+        $.ajax({
+          url: "/get-product-details/",
+          data: { product_id: productId },
+          success: function(data) {
+            row.querySelector('input[name="hsn"]').value = data.hsn_code;
+            row.querySelector('input[name="price"]').value = data.price;
+            row.querySelector('input[name="quantity"]').value = 1;
+
+            const total = parseFloat(data.price) * 1;
+            row.querySelector('input[name="total"]').value = total.toFixed(2);
+
+            calculateGrandTotal();
+          }
+        });
+      } else {
+        row.querySelector('input[name="hsn"]').value = "";
+        row.querySelector('input[name="price"]').value = "";
+        row.querySelector('input[name="total"]').value = "";
+        calculateGrandTotal();
+      }
+    }
+  });
+
+  // 🔁 Update total when quantity or price changes
+  table.addEventListener("input", function(e) {
+    if (e.target.name === "quantity" || e.target.name === "price") {
+      const row = e.target.closest("tr");
+      calculateRow(row);
+    }
+  });
+
+  // ➕ Add new row
+  addRowBtn.addEventListener("click", function() {
+    const newRow = table.querySelector("tbody tr").cloneNode(true);
+    newRow.querySelectorAll("input").forEach(input => input.value = "");
+    newRow.querySelector("select").selectedIndex = 0;
+    table.querySelector("tbody").appendChild(newRow);
+    calculateGrandTotal();
+  });
+
+  // ❌ Remove row
+  table.addEventListener("click", function(e) {
+    if (e.target.closest(".remove-row")) {
+      if (table.querySelectorAll("tbody tr").length > 1) {
+        e.target.closest("tr").remove();
+        calculateGrandTotal();
+      }
+    }
+  });
+});
+</script>
+{% endblock %}

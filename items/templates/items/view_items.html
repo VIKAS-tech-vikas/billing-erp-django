@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}All Saved Items{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-header bg-gradient text-white d-flex justify-content-between align-items-center rounded-top-4"
+         style="background: linear-gradient(90deg, #007bff, #00b4d8);">
+      <h4 class="mb-0 fw-bold">
+        <i class="bi bi-clipboard-data me-2"></i> All Saved Items
+      </h4>
+      <a href="{% url 'add_item' %}" class="btn btn-primary rounded-pill shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Add New Item
+      </a>
+    </div>
+
+    <div class="card-body bg-light">
+      <!-- 🔍 Search Bar -->
+      <form method="get" class="d-flex mb-3">
+        <input type="text" name="search" value="{{ search }}" class="form-control rounded-start-pill shadow-sm"
+               placeholder="🔍 Search items...">
+        <button type="submit" class="btn btn-outline-primary rounded-end-pill shadow-sm">Search</button>
+      </form>
+
+      <!-- 🧾 Table -->
+      <div class="table-responsive">
+        <table class="table table-hover align-middle text-center">
+          <thead class="table-primary">
+            <tr>
+              <th>#</th>
+              <th>Name</th>
+              <th>HSN Code</th>
+              <th>Quantity</th>
+              <th>GST Rate (%)</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in items %}
+              <tr class="bg-white shadow-sm">
+                <td>{{ forloop.counter }}</td> <!-- ✅ Always 1, 2, 3... -->
+                <td class="fw-semibold text-capitalize">{{ item.name }}</td>
+                <td>{{ item.hsn_code|default:"NA" }}</td>
+                <td>{{ item.stock }}</td>
+                <td>{{ item.gst_rate|floatformat:2 }}%</td>
+                <td>
+                  {% if item.stock > 0 %}
+                    <span class="badge bg-success rounded-pill px-3">In Stock</span>
+                  {% else %}
+                    <span class="badge bg-danger rounded-pill px-3">Out of Stock</span>
+                  {% endif %}
+                </td>
+                <td>
+                  <a href="{% url 'edit_item' item.id %}" class="btn btn-outline-primary btn-sm rounded-pill">
+                    <i class="bi bi-pencil-square"></i> Edit
+                  </a>
+                  <a href="{% url 'delete_item' item.id %}" class="btn btn-outline-danger btn-sm rounded-pill"
+                     onclick="return confirm('Are you sure you want to delete this item?');">
+                    <i class="bi bi-trash"></i> Delete
+                  </a>
+                </td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="7" class="text-muted py-4">No items found.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 💅 Styling -->
+<style>
+  .table {
+    border-radius: 15px;
+    overflow: hidden;
+  }
+  .table thead {
+    background: linear-gradient(90deg, #007bff, #00b4d8);
+    color: white;
+  }
+  .table-hover tbody tr:hover {
+    background-color: #e8f4ff !important;
+    transition: 0.3s ease;
+  }
+  .badge {
+    font-size: 0.85rem;
+  }
+  .btn-outline-primary:hover,
+  .btn-outline-danger:hover {
+    transform: scale(1.05);
+  }
+</style>
+{% endblock %}

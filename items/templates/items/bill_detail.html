@@ -1,0 +1,310 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice #{{ bill.id }}</title>
+    <style>
+        /* 📄 Page Setup */
+        @page {
+            size: A4;
+            margin: 20mm;
+        }
+
+        body {
+            font-family: "Segoe UI", Arial, sans-serif;
+            background: #fff;
+            color: #000;
+            margin: 0;
+        }
+
+        .invoice-box {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 25px;
+            border: 1.5px solid #000;
+            border-radius: 10px;
+        }
+
+        /* 🧾 Header */
+        header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        header h1 {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        header p {
+            margin: 2px 0;
+            font-size: 13px;
+        }
+
+        /* 👤 Customer / Invoice Info */
+        .section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .section h3 {
+            margin-bottom: 5px;
+            text-decoration: underline;
+        }
+
+        /* 📋 Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 6px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f5f5f5;
+            font-weight: bold;
+        }
+
+        /* 💰 Totals */
+        .totals {
+            width: 40%;
+            float: right;
+            margin-top: 15px;
+        }
+
+        .totals td {
+            border: none;
+            text-align: right;
+            padding: 5px;
+            font-size: 15px;
+        }
+
+        .totals td.label {
+            font-weight: bold;
+        }
+
+        /* 🧾 Footer */
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            font-size: 12px;
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+        }
+
+        /* ✍️ Signatures */
+        .sign-section {
+            margin-top: 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 14px;
+        }
+
+        .sign-box {
+            width: 45%;
+            text-align: center;
+        }
+
+        .sign-box hr {
+            border: none;
+            border-top: 1px solid #000;
+            margin-top: 60px;
+        }
+
+        /* 🖨 Buttons */
+        .print-btn {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .print-btn button {
+            border: none;
+            padding: 10px 25px;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+            color: white;
+            transition: 0.2s;
+        }
+
+        .btn-print { background: #007bff; }
+        .btn-pdf { background: #dc3545; }
+        .btn-whatsapp { background: #25d366; }
+
+        .print-btn button:hover { opacity: 0.85; }
+
+        /* ✅ Hide buttons in print and browser "Save as PDF" */
+        @media print {
+            .print-btn { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="invoice-box" id="invoiceArea">
+        <!-- 🧾 Header -->
+        <header>
+            <h1>HELPLINE TELECOM SYSTEM</h1>
+            <p><strong>GSTIN:</strong> 09XXXXX1234A1Z9 | <strong>Phone:</strong> +91-9876543210</p>
+            <p><strong>Address:</strong> Shop No. 5, 1st Floor, Opp. Fire Station, Moradabad, UP</p>
+        </header>
+
+        <!-- 👤 Customer Info -->
+        <div class="section">
+            <div>
+                <h3>Customer Details</h3>
+                <p><strong>Name:</strong> {{ bill.customer_name }}</p>
+                <p><strong>Phone:</strong> {{ bill.customer_phone }}</p>
+                <p><strong>Address:</strong> {{ bill.customer_address }}</p>
+            </div>
+            <div style="text-align:right;">
+                <h3>Invoice Info</h3>
+                <p><strong>Bill No:</strong> {{ bill.id }}</p>
+                <p><strong>Date:</strong> {{ bill.date|date:"d-m-Y H:i" }}</p>
+            </div>
+        </div>
+
+        <!-- 🧾 Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Item</th>
+                    <th>HSN Code</th>
+                    <th>Qty</th>
+                    <th>Price (₹)</th>
+                    <th>GST (%)</th>
+                    <th>GST (₹)</th>
+                    <th>Total (₹)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in bill_items %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ item.item.name }}</td>
+                    <td>{{ item.item.hsn_code }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.price|floatformat:2 }}</td>
+                    <td>{{ item.gst_rate }}</td>
+                    <td>{{ item.gst_amount|floatformat:2 }}</td>
+                    <td>{{ item.total|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- 💰 Totals -->
+        <table class="totals">
+            <tr>
+                <td class="label">Sub Total:</td>
+                <td>₹ {{ bill.total_amount|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td class="label">GST Total:</td>
+                <td>₹ {{ bill.gst_amount|floatformat:2 }}</td>
+            </tr>
+            <tr>
+                <td class="label"><strong>Grand Total:</strong></td>
+                <td><strong>₹ {{ bill.net_amount|floatformat:2 }}</strong></td>
+            </tr>
+        </table>
+
+        <div style="clear:both;"></div>
+
+        <!-- ✍️ Signatures -->
+        <div class="sign-section">
+            <div class="sign-box">
+                <hr>
+                <p>Receiver's Signature</p>
+            </div>
+            <div class="sign-box">
+                <hr>
+                <p>For <strong>Helpline Telecom System</strong><br>Authorized Signatory</p>
+            </div>
+        </div>
+
+        <!-- 🧾 Footer -->
+        <div class="footer">
+            <p><strong>Declaration:</strong> Goods once sold will not be taken back. Subject to Moradabad Jurisdiction only.</p>
+            <p>Thank you for your business!</p>
+        </div>
+
+        <!-- 🖨 Action Buttons -->
+        <div class="print-btn">
+            <button class="btn-print" onclick="window.print()">🖨 Print</button>
+            <button class="btn-pdf" id="downloadPDF">💾 Save as PDF</button>
+            <button class="btn-whatsapp" id="whatsappShare">💬 Share on WhatsApp</button>
+        </div>
+    </div>
+
+    <!-- ✅ PDF & WhatsApp Script -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+    <script>
+        // 📄 Generate PDF — Buttons completely hidden during capture
+        document.getElementById("downloadPDF").addEventListener("click", function () {
+            const invoice = document.getElementById("invoiceArea");
+            const buttons = document.querySelector(".print-btn");
+
+            // Hide buttons completely (no white space)
+            buttons.style.visibility = "hidden";
+            buttons.style.height = "0";
+            buttons.style.overflow = "hidden";
+
+            // Wait for DOM refresh before PDF
+            setTimeout(() => {
+                const customerName = "{{ bill.customer_name|default:'Customer' }}".replace(/\s+/g, '_');
+                const billDate = "{{ bill.date|date:'d-m-Y' }}";
+                const fileName = `Invoice_${customerName}_${billDate}.pdf`;
+
+                const opt = {
+                    margin: 0.5,
+                    filename: fileName,
+                    image: { type: "jpeg", quality: 0.98 },
+                    html2canvas: { scale: 2, useCORS: true, scrollY: 0 },
+                    jsPDF: { unit: "in", format: "a4", orientation: "portrait" }
+                };
+
+                html2pdf()
+                    .from(invoice)
+                    .set(opt)
+                    .save()
+                    .then(() => {
+                        // Restore buttons after saving
+                        buttons.style.visibility = "visible";
+                        buttons.style.height = "auto";
+                        buttons.style.overflow = "visible";
+                    });
+            }, 500);
+        });
+
+        // 💬 WhatsApp Share (Text Message)
+        document.getElementById("whatsappShare").addEventListener("click", function () {
+            const phone = "{{ bill.customer_phone|default:'' }}";
+            const message = encodeURIComponent(
+                `Hello {{ bill.customer_name }},\n\nHere is your invoice:\nBill No: {{ bill.id }}\nDate: {{ bill.date|date:"d-m-Y H:i" }}\nTotal: ₹{{ bill.net_amount|floatformat:2 }}\n\nThank you for your purchase from Helpline Telecom System!`
+            );
+
+            if (phone) {
+                window.open(`https://wa.me/${phone}?text=${message}`, "_blank");
+            } else {
+                alert("⚠️ Customer phone number not available for WhatsApp sharing.");
+            }
+        });
+    </script>
+</body>
+</html>

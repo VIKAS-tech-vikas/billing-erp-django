@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}{{ customer_name }} - Ledger{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="card shadow-lg border-0 rounded-4">
+    <!-- Header -->
+    <div class="card-header text-white text-center rounded-top-4"
+         style="background: linear-gradient(90deg, #007bff, #00b4d8);">
+      <h3 class="fw-bold mb-0">
+        <i class="bi bi-person-lines-fill me-2"></i> {{ customer_name }} - Customer Ledger
+      </h3>
+    </div>
+
+    <!-- Body -->
+    <div class="card-body bg-light">
+
+      <!-- Summary Section -->
+      <div class="alert alert-info mb-4 text-center rounded-4 shadow-sm p-3">
+        <h5 class="mb-2 fw-bold">📋 Summary</h5>
+        <div class="row justify-content-center">
+          <div class="col-md-3 col-6">
+            <p><strong>Bill Total:</strong><br> ₹ {{ total_bill|floatformat:2 }}</p>
+          </div>
+          <div class="col-md-3 col-6">
+            <p><strong>Estimate Total:</strong><br> ₹ {{ total_estimate|floatformat:2 }}</p>
+          </div>
+          <div class="col-md-3 col-12">
+            <p class="fw-bold text-primary"><strong>Total Udhar:</strong><br> ₹ {{ total_udhar|floatformat:2 }}</p>
+          </div>
+        </div>
+        <a href="{% url 'customer_summary' %}" class="btn btn-outline-primary btn-sm mt-2">
+          <i class="bi bi-arrow-left"></i> Back to Summary
+        </a>
+      </div>
+
+      <!-- Bills Section -->
+      <h5 class="fw-bold text-primary mb-3"><i class="bi bi-receipt-cutoff me-2"></i>Customer Bills</h5>
+      {% if bills %}
+      <div class="table-responsive mb-4">
+        <table class="table table-bordered align-middle text-center table-hover">
+          <thead class="table-primary">
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Items Purchased</th>
+              <th>Phone</th>
+              <th>Total (₹)</th>
+              <th>GST (₹)</th>
+              <th>Net (₹)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for bill in bills %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ bill.date|date:"d-m-Y H:i" }}</td>
+              <td class="text-start">
+                <ul class="mb-0 list-unstyled">
+                  {% for item in bill.items.all %}
+                  <li>{{ item.item.name }} — {{ item.quantity }} × ₹{{ item.price|floatformat:2 }}</li>
+                  {% endfor %}
+                </ul>
+              </td>
+              <td>{{ bill.customer_phone|default:"—" }}</td>
+              <td>₹ {{ bill.total_amount|floatformat:2 }}</td>
+              <td>₹ {{ bill.gst_amount|floatformat:2 }}</td>
+              <td class="fw-bold text-success">₹ {{ bill.net_amount|floatformat:2 }}</td>
+              <td>
+                <a href="{% url 'bill_detail' bill.id %}" class="btn btn-primary btn-sm">
+                  <i class="bi bi-eye"></i> View
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-light">
+            <tr>
+              <th colspan="4" class="text-end">Total Bill Amount:</th>
+              <th colspan="3" class="text-primary fw-bold">₹ {{ total_bill|floatformat:2 }}</th>
+              <th></th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted text-center">No bills found for this customer.</p>
+      {% endif %}
+
+      <!-- Estimates Section -->
+      <h5 class="fw-bold text-success mb-3"><i class="bi bi-clipboard-data me-2"></i>Customer Estimates</h5>
+      {% if estimates %}
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle text-center table-hover">
+          <thead class="table-success">
+            <tr>
+              <th>#</th>
+              <th>Date</th>
+              <th>Items</th>
+              <th>Phone</th>
+              <th>Total (₹)</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for estimate in estimates %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ estimate.date|date:"d-m-Y H:i" }}</td>
+              <td class="text-start">
+                <ul class="mb-0 list-unstyled">
+                  {% for item in estimate.items.all %}
+                  <li>{{ item.item.name }} — {{ item.quantity }} × ₹{{ item.price|floatformat:2 }}</li>
+                  {% endfor %}
+                </ul>
+              </td>
+              <td>{{ estimate.customer_phone|default:"—" }}</td>
+              <td class="fw-bold text-success">₹ {{ estimate.net_amount|floatformat:2 }}</td>
+              <td>
+                <a href="{% url 'estimate_bill' estimate.id %}" class="btn btn-success btn-sm">
+                  <i class="bi bi-eye"></i> View
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot class="table-light">
+            <tr>
+              <th colspan="4" class="text-end">Total Estimate Amount:</th>
+              <th class="fw-bold text-success">₹ {{ total_estimate|floatformat:2 }}</th>
+              <th></th>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      {% else %}
+      <p class="text-muted text-center">No estimates found for this customer.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

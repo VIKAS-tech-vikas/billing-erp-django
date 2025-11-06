@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Estimate #{{ bill.id }}{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+  <div class="card shadow-lg border-0 rounded-4">
+    <div class="card-header text-white text-center rounded-top-4"
+         style="background: linear-gradient(90deg, #007bff, #00b4d8);">
+      <h3 class="mb-0 fw-bold">
+        <i class="bi bi-printer-fill me-2"></i> Estimate #{{ bill.id }}
+      </h3>
+    </div>
+
+    <div class="card-body bg-white p-4">
+      <!-- 🧾 Customer Details -->
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <h5 class="fw-bold">Customer Details</h5>
+          <p class="mb-1"><strong>Name:</strong> {{ bill.customer_name }}</p>
+          <p class="mb-1"><strong>Phone:</strong> {{ bill.customer_phone }}</p>
+          <p class="mb-1"><strong>Address:</strong> {{ bill.customer_address }}</p>
+        </div>
+        <div class="col-md-6 text-md-end text-start">
+          <h5 class="fw-bold">Estimate Info</h5>
+          <p class="mb-1"><strong>Date:</strong> {{ bill.date|date:"d-m-Y H:i" }}</p>
+          <p class="mb-1"><strong>Estimate No:</strong> {{ bill.id }}</p>
+        </div>
+      </div>
+
+      <hr>
+
+      <!-- 📦 Product Table -->
+      <div class="table-responsive mt-3">
+        <table class="table table-bordered text-center align-middle">
+          <thead class="table-primary">
+            <tr>
+              <th>#</th>
+              <th>Product Name</th>
+              <th>HSN Code</th>
+              <th>Quantity</th>
+              <th>Price (₹)</th>
+              <th>Total (₹)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in bill_items %}
+              <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="text-start">{{ item.item.name }}</td>
+                <td>{{ item.item.hsn_code }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>{{ item.price }}</td>
+                <td>{{ item.total }}</td>
+              </tr>
+            {% empty %}
+              <tr>
+                <td colspan="6" class="text-muted text-center">No items found in this estimate.</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 💰 Total Summary -->
+      <div class="text-end mt-3">
+        <h5 class="fw-bold">Total Amount: ₹ {{ bill.total_amount }}</h5>
+        <h5 class="fw-bold">Net Amount: ₹ {{ bill.net_amount }}</h5>
+      </div>
+
+      <div class="text-center mt-4">
+        <button onclick="window.print()" class="btn btn-success">
+          <i class="bi bi-printer"></i> Print Estimate
+        </button>
+        <a href="{% url 'view_estimates' %}" class="btn btn-secondary">
+          <i class="bi bi-arrow-left"></i> Back
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
